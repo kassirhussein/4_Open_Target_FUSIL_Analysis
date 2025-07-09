@@ -1,3 +1,7 @@
+# READ ME
+
+<a href="https://creativecommons.org">Untitled</a> © 1999 by <a href="https://creativecommons.org">Jane Doe</a> is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="" style="max-width: 1em;max-height:1em;margin-left: .2em;">
+
 # 🧬 Drug–Target Interaction Landscape by Gene Essentiality and Disease Ontology
 
 This repository presents a comprehensive analysis of drug–gene interactions by integrating clinical drug data, gene essentiality classifications (FUSIL), and disease ontologies. The goal is to explore how gene essentiality affects the distribution of approved and withdrawn drugs across different therapeutic areas.
