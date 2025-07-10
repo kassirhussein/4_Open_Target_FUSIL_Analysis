@@ -101,13 +101,13 @@ ggplot(plot_data, aes(x = Dataset, y = Unique_Drugs)) +
 
 # Drugs per target (how many drugs target each gene)
 nb_drugs_per_target_opentarget <- opentarget_approved %>%
-  select(approvedSymbol, prefName) %>%
+  dplyr::select(approvedSymbol, prefName) %>%
   unique() %>%
   count(approvedSymbol)
 
 # Targets per drug (how many genes each drug targets)
 nb_target_per_drug_opentarget <- opentarget_approved %>%
-  select(approvedSymbol, prefName) %>%
+  dplyr::select(approvedSymbol, prefName) %>%
   unique() %>%
   count(prefName)
 
@@ -119,12 +119,12 @@ colnames(nb_target_per_drug_opentarget) <- c("name", "count")
 target_degree_freq <- nb_drugs_per_target_opentarget %>%
   count(count, name = "frequency") %>%
   mutate(category = "Drugs per Target", degree = count) %>%
-  select(degree, frequency, category)
+  dplyr::select(degree, frequency, category)
 
 drug_degree_freq <- nb_target_per_drug_opentarget %>%
   count(count, name = "frequency") %>%
   mutate(category = "Targets per Drug", degree = count) %>%
-  select(degree, frequency, category)
+  dplyr::select(degree, frequency, category)
 
 # Combine both distributions
 degree_distribution <- bind_rows(target_degree_freq, drug_degree_freq)
@@ -159,14 +159,14 @@ ggplot(degree_distribution, aes(x = degree, y = frequency, color = category)) +
 
 # Drugs per target (DrugBank)
 nb_drugs_per_target_drugbank <- drugbank_approved %>%
-  select(name, gene_name) %>%
+  dplyr::select(name, gene_name) %>%
   unique() %>%
   na.omit() %>%
   count(gene_name)
 
 # Targets per drug (DrugBank)
 nb_target_per_drug_drugbank <- drugbank_approved %>%
-  select(name, gene_name) %>%
+  dplyr::select(name, gene_name) %>%
   unique() %>%
   na.omit() %>%
   count(name)
@@ -179,12 +179,12 @@ colnames(nb_target_per_drug_drugbank) <- c("name", "count")
 target_degree_freq <- nb_drugs_per_target_drugbank %>%
   count(count, name = "frequency") %>%
   mutate(category = "Drugs per Target", degree = count) %>%
-  select(degree, frequency, category)
+  dplyr::select(degree, frequency, category)
 
 drug_degree_freq <- nb_target_per_drug_drugbank %>%
   count(count, name = "frequency") %>%
   mutate(category = "Targets per Drug", degree = count) %>%
-  select(degree, frequency, category)
+  dplyr::select(degree, frequency, category)
 
 # Combine
 degree_distribution <- bind_rows(target_degree_freq, drug_degree_freq)
@@ -514,14 +514,14 @@ efo_ancestor_terms_joined <- opentarget_approved %>%
 
 # Extract drug-gene pairs from joined dataset
 drug_gene <- efo_ancestor_terms_joined %>%
-  select(approvedSymbol, prefName) %>%
+  dplyr::select(approvedSymbol, prefName) %>%
   unique()
 
 # Join drug-gene pairs with FUSIL data to annotate each target with FUSIL bin
 drug_fusil <- fusil %>%
   full_join(drug_gene, by = c("gene_symbol" = "approvedSymbol")) %>%
   na.omit() %>%
-  select(3, 4, 5)  # selects fusil, gene, and drug
+  dplyr::select(3, 4, 5)  # dplyr::selects fusil, gene, and drug
 
 # Count number of genes in each FUSIL bin
 count_fusil_genes <- drug_fusil %>%
@@ -541,14 +541,14 @@ for (cls in unique_drug_indication_class) {
   # Filter drug-gene pairs for current disease class
   drug_gene <- efo_ancestor_terms_joined %>%
     filter(efo_ancestor_description == cls) %>%
-    select(approvedSymbol, prefName) %>%
+    dplyr::select(approvedSymbol, prefName) %>%
     distinct()
   
   # Join with FUSIL and count occurrences per FUSIL bin
   tmp <- fusil %>%
     full_join(drug_gene, by = c("gene_symbol" = "approvedSymbol")) %>%
     na.omit() %>%
-    select(3, 4, 5) %>%
+    dplyr::select(3, 4, 5) %>%
     count(fusil) %>%
     left_join(count_fusil_genes, by = "fusil") %>%
     mutate(
