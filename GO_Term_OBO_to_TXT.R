@@ -193,7 +193,7 @@ for (i in 1:length(files_to_export)) {
 
 
 
-# MONDO_TOP_LEVEL_DATA_WRANGLING ----------------------
+# GO_TOP_LEVEL_DATA_WRANGLING ----------------------
 
 
 library(tidyverse)
