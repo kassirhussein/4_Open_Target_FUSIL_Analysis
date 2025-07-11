@@ -168,17 +168,6 @@ names(files_to_export) <- Cs(go_description,
                              go_toplevels_phenotypic_abnormalities_only)
 
 
-for (i in 1:length(files_to_export)){
-  
-  write.table(files_to_export[[i]],
-              paste0(go_dir, names(files_to_export)[i], ".txt"), 
-              quote = F, sep = "\t", row.names = FALSE)
-  
-}
-
-
-
-
 # Create the directory if it doesn't exist
 if (!dir.exists(go_dir)) {
   dir.create(go_dir, recursive = TRUE)
