@@ -354,8 +354,8 @@ combined_fusil <- combined_fusil %>%
 drug_classes_to_remove <- c(
   "urogenital neoplasm", "disease related to transplantation", 
   "connective tissue disease", "poisoning", "syndromic disease", 
-  "obstetric disorder", "post-infectious disorder", "chromosomal disorder"
-)
+  "obstetric disorder", "post-infectious disorder", "chromosomal disorder", "disorder of visual system")
+
 
 combined_fusil_filtered <- combined_fusil %>%
   filter(!(drug_class %in% drug_classes_to_remove))

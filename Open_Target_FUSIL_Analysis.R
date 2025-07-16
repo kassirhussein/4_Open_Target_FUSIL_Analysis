@@ -226,7 +226,7 @@ ggplot(degree_distribution, aes(x = degree, y = frequency, color = category)) +
 
 
 
-# Observing how many of the approved drugs tar --------
+# Observing how many of the approved drugs target are Protein Coding Genes --------
 
 # Total approved drug targets with OT
 
@@ -256,14 +256,22 @@ head(non_protein_genes)  # View some of them
 summary_pc_ot <- data.frame(
   Category = c("Protein-Coding OT", "Non-Protein-Coding OT"),
   Count = c(protein_coding_count, non_protein_coding_count)
-)
+) %>%
+  mutate(percentage = (Count/sum(Count)*100))
+
+# Extract the pewrcenatge values
+
+protein_coding_percentage <- summary_pc_ot[1,3]
+non_protein_coding_percentage <- summary_pc_ot[2,3]
+
+
 
 # Plot
-ggplot(summary_pc_ot, aes(x = Category, y = Count, fill = Category)) +
+ggplot(summary_pc_ot, aes(x = Category, y = percentage, fill = Category)) +
   geom_bar(stat = "identity", width = 0.6) +
   theme_minimal() +
   labs(title = "Gene Targets of Approved Drugs",
-       y = "Number of Unique Gene Targets",
+       y = "Percentage of Unique Gene Targets",
        x = "") +
   scale_fill_manual(values = c("#4CAF50", "#F44336")) +
   theme(legend.position = "none")
@@ -298,14 +306,153 @@ head(non_protein_genes_db)  # View some of them
 summary_pc_db <- data.frame(
   Category = c("Protein-Coding DB", "Non-Protein-Coding DB"),
   Count = c(protein_coding_count_db, non_protein_coding_count_db)
-)
+) %>%
+  mutate(percentage = (Count/sum(Count)*100))
+
+# Extract the pewrcenatge values
+
+protein_coding_percentage_db <- summary_pc_db[1,3]
+non_protein_coding_percentage_db <- summary_pc_db[2,3]
+
 
 # Plot
-ggplot(summary_pc_db, aes(x = Category, y = Count, fill = Category)) +
+ggplot(summary_pc_db, aes(x = Category, y = percentage, fill = Category)) +
   geom_bar(stat = "identity", width = 0.6) +
   theme_minimal() +
   labs(title = "Gene Targets of Approved Drugs",
-       y = "Number of Unique Gene Targets",
+       y = "Percentage of Unique Gene Targets",
+       x = "") +
+  scale_fill_manual(values = c("#4CAF50", "#F44336")) +
+  theme(legend.position = "none")
+
+
+#
+
+# Compare the 2 Datasets
+
+# Example data (replace with your actual numbers)
+
+# Create summary dataframe
+compare_df <- data.frame(
+  Dataset = rep(c("Open Targets", "Drug Bank"), each = 2),
+  Category = rep(c("Protein-Coding", "Non-Protein-Coding"), times = 2),
+  Count = c(protein_coding_count, non_protein_coding_count,
+            protein_coding_count_db, non_protein_coding_count_db),
+  Percentage = c (protein_coding_percentage, non_protein_coding_percentage,
+                  protein_coding_percentage_db, non_protein_coding_percentage_db)
+  
+)
+
+ggplot(compare_df, aes(x = Dataset, y = Percentage, fill = Category)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  theme_minimal() +
+  labs(title = "Comparison of Gene Targets between OpenTargets and DrugBank",
+       y = "Percentage of Unique Gene Targets",
+       x = "") +
+  scale_fill_manual(values = c("#4CAF50", "#F44336"))
+
+
+
+
+
+# Observing how many of the approved drugs target are fusil Genes --------
+
+# Total approved drug targets with OT
+
+# Extract unique gene targets
+unique_targets <- unique(opentarget_approved$approvedSymbol)
+
+# Ensure gene symbol column is named consistently
+fusil_gene_list <- unique(fusil$gene_symbol)
+
+# Check which targets are protein-coding
+is_fusil_gene <- unique_targets %in% fusil_gene_list
+
+# Count results
+total_targets <- length(unique_targets)
+fusil_gene_count <- sum(is_fusil_gene)
+non_fusil_count <- total_targets - fusil_gene_count
+
+# Display summary
+cat("Total unique gene targets:", total_targets, "\n")
+cat("Fusil gene targets:", fusil_gene_count, "\n")
+cat("Non-fusil gene targets:", non_fusil_count, "\n")
+
+non_fusil_genes <- unique_targets[!is_fusil_gene]
+head(non_fusil_genes)  # View some of them
+
+# Create a summary dataframe
+summary_fusil_ot <- data.frame(
+  Category = c("Fusil OT", "Non-Fusil OT"),
+  Count = c(fusil_gene_count, non_fusil_count)
+) %>%
+  mutate(percentage = (Count/sum(Count)*100))
+
+
+
+# Extract the pewrcenatge values
+
+fusil_gene_percentage <- summary_fusil_ot[1,3]
+non_fusil_percentage <- summary_fusil_ot[2,3]
+
+
+# Plot
+ggplot(summary_fusil_ot, aes(x = Category, y = percentage, fill = Category)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  theme_minimal() +
+  labs(title = "Gene Targets of Approved Drugs",
+       y = "Percentage of Unique Gene Targets",
+       x = "") +
+  scale_fill_manual(values = c("#4CAF50", "#F44336")) +
+  theme(legend.position = "none")
+
+
+
+# Total approved drug targets with DrugBank
+
+# Extract unique gene targets
+unique_targets_db <- unique(drugbank_approved$gene_name)
+
+# Ensure gene symbol column is named consistently
+fusil_gene_list <- unique(fusil$gene_symbol)
+
+# Check which targets are protein-coding
+is_fusil_gene_db <- unique_targets_db %in% fusil_gene_list
+
+# Count results
+total_targets <- length(unique_targets_db)
+fusil_gene_count_db <- sum(is_fusil_gene_db)
+non_fusil_count_db <- total_targets - fusil_gene_count_db
+
+# Display summary
+cat("Total unique gene targets:", total_targets, "\n")
+cat("Fusil gene targets:", fusil_gene_count_db, "\n")
+cat("Non-fusil gene targets:", non_fusil_count_db, "\n")
+
+non_fusil_genes_db <- unique_targets_db[!is_fusil_gene_db]
+head(non_fusil_genes_db)  # View some of them
+
+# Create a summary dataframe
+summary_fusil_db <- data.frame(
+  Category = c("Fusil DB", "Non-Fusil DB"),
+  Count = c(fusil_gene_count_db, non_fusil_count_db)
+) %>%
+  mutate(percentage = (Count/sum(Count)*100))
+
+
+
+# Extract the pewrcenatge values
+
+fusil_gene_percentage_db <- summary_fusil_db[1,3]
+non_fusil_percentage_db <- summary_fusil_db[2,3]
+
+
+# Plot
+ggplot(summary_fusil_db, aes(x = Category, y = percentage, fill = Category)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  theme_minimal() +
+  labs(title = "Gene Targets of Approved Drugs",
+       y = "Percentage of Unique Gene Targets",
        x = "") +
   scale_fill_manual(values = c("#4CAF50", "#F44336")) +
   theme(legend.position = "none")
@@ -319,18 +466,22 @@ ggplot(summary_pc_db, aes(x = Category, y = Count, fill = Category)) +
 # Create summary dataframe
 compare_df <- data.frame(
   Dataset = rep(c("Open Targets", "Drug Bank"), each = 2),
-  Category = rep(c("Protein-Coding", "Non-Protein-Coding"), times = 2),
-  Count = c(protein_coding_count, non_protein_coding_count,
-            protein_coding_count_db, non_protein_coding_count_db)
+  Category = rep(c("In The FUSIL", "Not In FUSIL"), times = 2),
+  Count = c(fusil_gene_count, non_fusil_count,
+            fusil_gene_count_db, non_fusil_count_db),
+  Percentage = c (fusil_gene_percentage, non_fusil_percentage,
+                  fusil_gene_percentage_db, non_fusil_percentage_db)
 )
 
-ggplot(compare_df, aes(x = Dataset, y = Count, fill = Category)) +
+ggplot(compare_df, aes(x = Dataset, y = Percentage, fill = Category)) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
   theme_minimal() +
   labs(title = "Comparison of Gene Targets between OpenTargets and DrugBank",
-       y = "Number of Unique Gene Targets",
+       y = "Percentage of Unique Gene Targets",
        x = "") +
   scale_fill_manual(values = c("#4CAF50", "#F44336"))
+
+
 
 
 # ------------------------ GENERAL OPEN TARGET DATA OVERVIEW ------------------------
