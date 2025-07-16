@@ -36,6 +36,9 @@ opentarget_data <- opentarget_data %>%
 # --- Import DrugBank Data ---
 DrugBank_data <- read_csv("C:/Users/HP-ssd/Desktop/Short term project2/Drug bank data/DrugBank_data.csv", 
                           col_types = cols(...1 = col_skip()))
+# --- Import a List of Protein Coding GENES ---
+
+pc_genes <- read.delim("https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/locus_groups/protein-coding_gene.txt")
 
 
 # Filter for Approved Drugs -----------------------------
@@ -200,7 +203,7 @@ ggplot(degree_distribution, aes(x = degree, y = frequency, color = category)) +
 
 # ====================================================
 # Disease Category-Level Drug Analysis using FUSIL Bins
-# Author: [Your Name]
+# Author: Hussein
 # Description: This script processes ontology mappings and classifies drug-target
 #              genes into high-level disease classes and FUSIL sensitivity bins.
 # ====================================================

@@ -31,6 +31,13 @@ opentarget_data <- opentarget_data %>%
 DrugBank_data <- read_csv("C:/Users/HP-ssd/Desktop/Short term project2/Drug bank data/DrugBank_data.csv", 
                           col_types = cols(...1 = col_skip()))
 
+DrugBank_data <- DrugBank_data[!is.na(DrugBank_data$gene_name), ]
+
+# --- Import a List of Protein Coding GENES ---
+
+pc_genes <- read.delim("https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/locus_groups/protein-coding_gene.txt")
+
+
 # ------------------------ CLUSTERING ACTION TYPES ------------------------
 
 # Define a mapping from specific action types to broader clusters
@@ -67,6 +74,7 @@ opentarget_data <- opentarget_data %>%
 # Filter DrugBank for non-withdrawn drugs (approved)
 drugbank_approved <- DrugBank_data %>%
   filter(!grepl("withdrawn", groups, ignore.case = TRUE))
+  
 
 # Filter Open Targets for drugs with 'Completed' status (assumed approved)
 opentarget_approved <- opentarget_data %>%
@@ -216,6 +224,113 @@ ggplot(degree_distribution, aes(x = degree, y = frequency, color = category)) +
   theme_minimal()
 
 
+
+
+# Observing how many of the approved drugs tar --------
+
+# Total approved drug targets with OT
+
+# Extract unique gene targets
+unique_targets <- unique(opentarget_approved$approvedSymbol)
+
+# Ensure gene symbol column is named consistently
+protein_gene_list <- unique(pc_genes$symbol)
+
+# Check which targets are protein-coding
+is_protein_coding <- unique_targets %in% protein_gene_list
+
+# Count results
+total_targets <- length(unique_targets)
+protein_coding_count <- sum(is_protein_coding)
+non_protein_coding_count <- total_targets - protein_coding_count
+
+# Display summary
+cat("Total unique gene targets:", total_targets, "\n")
+cat("Protein-coding gene targets:", protein_coding_count, "\n")
+cat("Non-protein-coding gene targets:", non_protein_coding_count, "\n")
+
+non_protein_genes <- unique_targets[!is_protein_coding]
+head(non_protein_genes)  # View some of them
+
+# Create a summary dataframe
+summary_pc_ot <- data.frame(
+  Category = c("Protein-Coding OT", "Non-Protein-Coding OT"),
+  Count = c(protein_coding_count, non_protein_coding_count)
+)
+
+# Plot
+ggplot(summary_pc_ot, aes(x = Category, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  theme_minimal() +
+  labs(title = "Gene Targets of Approved Drugs",
+       y = "Number of Unique Gene Targets",
+       x = "") +
+  scale_fill_manual(values = c("#4CAF50", "#F44336")) +
+  theme(legend.position = "none")
+
+
+
+# Total approved drug targets with DrugBank
+
+# Extract unique gene targets
+unique_targets_db <- unique(drugbank_approved$gene_name)
+
+# Ensure gene symbol column is named consistently
+protein_gene_list <- unique(pc_genes$symbol)
+
+# Check which targets are protein-coding
+is_protein_coding_db <- unique_targets_db %in% protein_gene_list
+
+# Count results
+total_targets_db <- length(unique_targets_db)
+protein_coding_count_db <- sum(is_protein_coding_db)
+non_protein_coding_count_db <- total_targets_db - protein_coding_count_db
+
+# Display summary
+cat("Total unique gene targets DB:", total_targets_db, "\n")
+cat("Protein-coding gene targets DB:", protein_coding_count_db, "\n")
+cat("Non-protein-coding gene targets DB:", non_protein_coding_count_db, "\n")
+
+non_protein_genes_db <- unique_targets_db[!is_protein_coding_db]
+head(non_protein_genes_db)  # View some of them
+
+# Create a summary dataframe
+summary_pc_db <- data.frame(
+  Category = c("Protein-Coding DB", "Non-Protein-Coding DB"),
+  Count = c(protein_coding_count_db, non_protein_coding_count_db)
+)
+
+# Plot
+ggplot(summary_pc_db, aes(x = Category, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", width = 0.6) +
+  theme_minimal() +
+  labs(title = "Gene Targets of Approved Drugs",
+       y = "Number of Unique Gene Targets",
+       x = "") +
+  scale_fill_manual(values = c("#4CAF50", "#F44336")) +
+  theme(legend.position = "none")
+
+
+
+# Compare the 2 Datasets
+
+# Example data (replace with your actual numbers)
+
+# Create summary dataframe
+compare_df <- data.frame(
+  Dataset = rep(c("Open Targets", "Drug Bank"), each = 2),
+  Category = rep(c("Protein-Coding", "Non-Protein-Coding"), times = 2),
+  Count = c(protein_coding_count, non_protein_coding_count,
+            protein_coding_count_db, non_protein_coding_count_db)
+)
+
+ggplot(compare_df, aes(x = Dataset, y = Count, fill = Category)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  theme_minimal() +
+  labs(title = "Comparison of Gene Targets between OpenTargets and DrugBank",
+       y = "Number of Unique Gene Targets",
+       x = "") +
+  scale_fill_manual(values = c("#4CAF50", "#F44336"))
 
 
 # ------------------------ GENERAL OPEN TARGET DATA OVERVIEW ------------------------
