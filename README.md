@@ -8,7 +8,7 @@ This repository presents a comprehensive analysis of drug–gene interactions by
 
 ---
 
-# Please RUN the ontology mapping first given that some scripts depenmds on the output.
+# Please RUN the ontology mapping first given that some scripts depends on the output.
 
 ## Data Sources
 
