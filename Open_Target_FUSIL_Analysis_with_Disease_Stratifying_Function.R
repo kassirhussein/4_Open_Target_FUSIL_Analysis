@@ -272,6 +272,34 @@ efo_ancestor_terms_joined <- opentarget_approved %>%
   na.omit()
 
 
+# ------------------------ Seeing drugs distribution per disease class ------------------------
+
+drug_classes_to_remove <- c(
+  "urogenital neoplasm", "disease related to transplantation", 
+  "connective tissue disease", "poisoning", "syndromic disease", 
+  "obstetric disorder", "post-infectious disorder", "chromosomal disorder", "disorder of visual system")
+
+
+count_disease <- efo_ancestor_terms_joined %>%
+  dplyr::select(prefName, primary_category) %>%
+  unique() %>%
+  count(primary_category) %>%
+  mutate(sum = sum(n)) %>%
+  mutate(percentage = n/sum *100)
+
+#write.csv(count_disease, "C:/Users/HP-ssd/Desktop/count_dx.csv")
+
+ggplot(count_disease, aes(x = reorder(primary_category, percentage), y = percentage)) +
+  geom_bar(stat = "identity", fill = "tomato") +
+  coord_flip() +
+  scale_y_log10() +  # log scale for percentage
+  labs(
+    title = "Drugs Main Disease Category Indicaton",
+    x = "Diagnosis Category",
+    y = "Log10(Percentage)"
+  ) +
+  theme_minimal()
+
 # Prepare Drug-Gene Mappings -------------------------------
 
 # Unique drug-gene combinations

@@ -546,7 +546,7 @@ ggplot(percentage_fusil_withdrawn, aes(x = fusil, y = percentage, fill = fusil))
   labs(
     title = "FUSIL Category Distribution Among Withdrawn Drug Targets",
     x = "FUSIL Category",
-    y = "Number of Targets"
+    y = "Percentage of Targets"
   ) +
   theme_minimal()
 
