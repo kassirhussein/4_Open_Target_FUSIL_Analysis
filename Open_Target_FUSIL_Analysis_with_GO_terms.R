@@ -70,7 +70,7 @@ drugbank_approved <- DrugBank_data %>%
 
 # Filter Open Targets for drugs with 'Completed' status (assumed approved)
 opentarget_approved <- opentarget_data %>%
-  filter(status == "Completed")
+  filter(phase == "4" | status == "Completed")
 
 
 

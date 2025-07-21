@@ -3,14 +3,9 @@
 
 # Load tidyverse for data manipulation and visualization
 library(tidyverse)
+library(scales)
 
 # ------------------------ DATA IMPORT ------------------------
-
-# Import MHRA side effect dataset and remove rows with NA
-mhra_se_data <- read_csv("C:/Users/HP-ssd/Desktop/Short term project2/mhra/mhra_se_data.csv", 
-                         col_types = cols(...1 = col_skip()))
-mhra_se_data <- mhra_se_data %>%
-  na.omit()
 
 # Import human gene paralogues data
 human_gene_paralogues <- read_csv("C:/Users/HP-ssd/Desktop/Short term project2/paralogues/human_gene_paralogues.csv", 
@@ -78,7 +73,7 @@ drugbank_approved <- DrugBank_data %>%
 
 # Filter Open Targets for drugs with 'Completed' status (assumed approved)
 opentarget_approved <- opentarget_data %>%
-  filter(status == "Completed")
+  filter(phase == "4" | status == "Completed")
 
 # ------------------------ DATASET COMPARISON ------------------------
 
@@ -590,7 +585,7 @@ ggplot(percentage_fusil_completed, aes(x = fusil, y = percentage, fill = fusil))
 
 # Count how many completed drugs target each gene
 gene_drugs_count <- opentarget_data %>%
-  filter(status == "Completed") %>%
+  filter(phase == "4" | status == "Completed") %>%
   dplyr::select(approvedSymbol, prefName) %>%
   unique() %>%
   group_by(approvedSymbol) %>%
@@ -645,11 +640,11 @@ ggplot(gene_drugs_fusil_count, aes(x = fusil, y = proportion, fill = fusil)) +
 
 # Filter Open Targets data to include only 'Completed' (approved) drugs
 opentarget_data_approved <- opentarget_data %>%
-  filter(status == "Completed")
+  filter(phase == "4" | status == "Completed")
 
 # Count the number of distinct drugs per gene
 gene_drugs_count <- opentarget_data %>%
-  filter(status == "Completed") %>%
+  filter(phase == "4" | status == "Completed") %>%
   dplyr::select(approvedSymbol, prefName) %>%
   unique() %>%
   group_by(approvedSymbol) %>%
@@ -658,7 +653,7 @@ gene_drugs_count <- opentarget_data %>%
 
 # Count the number of distinct indications per gene
 gene_drugs_count_indication <- opentarget_data %>%
-  filter(status == "Completed") %>%
+  filter(phase == "4" | status == "Completed") %>%
   dplyr::select(approvedSymbol, label) %>%
   unique() %>%
   group_by(approvedSymbol) %>%
@@ -692,14 +687,23 @@ summary_df <- gene_drugs_fusil_df_long %>%
                              "gene_target_drug_count" = "Drugs per Gene Target",
                              "indication_count" = "Indications per Gene Target"))
 
+
+summary_df <- summary_df %>%
+  group_by(count_type) %>%
+  mutate(percentage = (total_count/ sum(total_count))*100)
+
 # Line plot showing total drug and indication counts by FUSIL category
+
 ggplot(summary_df, aes(x = fusil, y = total_count, color = count_type, group = count_type)) +
   geom_line(size = 1.2) +
   geom_point(size = 3) +
-  geom_text(aes(label = total_count), vjust = -0.5, size = 3) +
-  labs(title = "Drug and indication counts per Target(Gene) amongst the FUSIL Category",
-       x = "FUSIL", y = "Total Count",
-       color = "Count Type") +
+  geom_text(aes(label = total_count), vjust = -0.5, size = 3, color = "black") +
+  scale_y_continuous(labels = function(x) sprintf("%.1f%%", x)) +
+  labs(
+    title = "Drug and Indication Counts per Target(Gene) per FUSIL Category",
+    x = "FUSIL", y = "Count",
+    color = "Count Type"
+  ) +
   theme_minimal()
 
 # ------------------------ DRUG–INDICATION RATIO PER FUSIL CATEGORY ------------------------
@@ -769,12 +773,45 @@ efo_ancestor_terms$efo_ancestor_id <- gsub("^efo:", "", efo_ancestor_terms$efo_a
 efo_ancestor_terms$efo_term_id <- sub("_", ":", efo_ancestor_terms$efo_term_id)
 efo_ancestor_terms$efo_ancestor_id <- sub("_", ":", efo_ancestor_terms$efo_ancestor_id)
 
+
+
 # ------------------------ JOIN EFO TERMS TO OPEN TARGET DATA ------------------------
 
 # Join curated disease labels from EFO with approved drugs in Open Targets
 efo_ancestor_terms_joined <- opentarget_approved %>%
   full_join(efo_ancestor_terms, by = c("label" = "efo_term_description")) %>%
   na.omit()
+
+
+# ------------------------ Seeing drugs distribution per disease class ------------------------
+
+drug_classes_to_remove <- c(
+  "urogenital neoplasm", "disease related to transplantation", 
+  "connective tissue disease", "poisoning", "syndromic disease", 
+  "obstetric disorder", "post-infectious disorder", "chromosomal disorder", "disorder of visual system")
+
+
+count_disease <- efo_ancestor_terms_joined %>%
+  filter(!(efo_ancestor_description %in% drug_classes_to_remove)) %>%
+  dplyr::select(prefName, efo_ancestor_description) %>%
+  unique() %>%
+  count(efo_ancestor_description) %>%
+  mutate(sum = sum(n)) %>%
+  mutate(percentage = n/sum *100)
+
+#write.csv(count_disease, "C:/Users/HP-ssd/Desktop/count_dx.csv")
+
+ggplot(count_disease, aes(x = reorder(efo_ancestor_description, percentage), y = percentage)) +
+  geom_bar(stat = "identity", fill = "tomato") +
+  coord_flip() +
+  scale_y_log10() +  # log scale for percentage
+  labs(
+    title = "Drugs Main Disease Category Indicaton",
+    x = "Diagnosis Category",
+    y = "Log10(Percentage)"
+  ) +
+  theme_minimal()
+
 
 # ------------------------ MAP DRUG-TARGET PAIRS TO FUSIL ------------------------
 
