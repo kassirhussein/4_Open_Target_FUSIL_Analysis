@@ -73,7 +73,7 @@ drugbank_approved <- DrugBank_data %>%
 
 # Filter Open Targets for drugs with 'Completed' status (assumed approved)
 opentarget_approved <- opentarget_data %>%
-  filter(phase == "4" | status == "Completed")
+  filter(status == "Completed", phase == "4")
 
 # ------------------------ DATASET COMPARISON ------------------------
 
@@ -585,7 +585,7 @@ ggplot(percentage_fusil_completed, aes(x = fusil, y = percentage, fill = fusil))
 
 # Count how many completed drugs target each gene
 gene_drugs_count <- opentarget_data %>%
-  filter(phase == "4" | status == "Completed") %>%
+  filter(status == "Completed", phase == "4") %>%
   dplyr::select(approvedSymbol, prefName) %>%
   unique() %>%
   group_by(approvedSymbol) %>%
@@ -640,11 +640,11 @@ ggplot(gene_drugs_fusil_count, aes(x = fusil, y = proportion, fill = fusil)) +
 
 # Filter Open Targets data to include only 'Completed' (approved) drugs
 opentarget_data_approved <- opentarget_data %>%
-  filter(phase == "4" | status == "Completed")
+  filter(status == "Completed", phase == "4")
 
 # Count the number of distinct drugs per gene
 gene_drugs_count <- opentarget_data %>%
-  filter(phase == "4" | status == "Completed") %>%
+  filter(status == "Completed", phase == "4") %>%
   dplyr::select(approvedSymbol, prefName) %>%
   unique() %>%
   group_by(approvedSymbol) %>%
@@ -653,7 +653,7 @@ gene_drugs_count <- opentarget_data %>%
 
 # Count the number of distinct indications per gene
 gene_drugs_count_indication <- opentarget_data %>%
-  filter(phase == "4" | status == "Completed") %>%
+  filter(status == "Completed", phase == "4") %>%
   dplyr::select(approvedSymbol, label) %>%
   unique() %>%
   group_by(approvedSymbol) %>%
@@ -725,7 +725,7 @@ gene_drugs_fusil_proportion$fusil <- factor(gene_drugs_fusil_proportion$fusil,
 # Bar plot: Average drug-to-indication ratio per gene across FUSIL categories
 ggplot(gene_drugs_fusil_proportion, aes(x = fusil, y = avg_ratio, fill = fusil)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Average Indication per drug target gene for each by FUSIL Category",
+  labs(title = "Average Indication per drug for each by FUSIL Category",
        x = "FUSIL Category",
        y = "Drugs per Indication (avg per gene)",
        fill = "FUSIL bin") +
@@ -763,6 +763,9 @@ ggplot(gene_drugs_fusil_proportion2, aes(x = fusil, y = Average_total_impact, fi
 efo_ancestor_terms <- read_delim("C:/Users/HP-ssd/Desktop/Short term project2/Analysis script/ontologies scripts/ontologies data wrangling/data_efo/efo_ancestor_terms.txt", 
                                  delim = "\t", escape_double = FALSE, 
                                  trim_ws = TRUE)
+
+efo_ancestor_terms$efo_ancestor_description <- str_to_title(efo_ancestor_terms$efo_ancestor_description)
+
 
 # ------------------------ CLEAN EFO DATA ------------------------
 
@@ -889,8 +892,11 @@ drug_classes_to_keep <- c("urogenital neoplasm", "premature aging syndrome", "ch
                           "radiation-induced disorder", "ulcer disease", "perinatal disease", 
                           "obstetric disorder", "post-infectious disorder")
 
+drug_classes_to_keep <- str_to_title(drug_classes_to_keep)
+drug_classes_to_remove <- str_to_title(drug_classes_to_remove)
+
 # Reorder and filter
-combined_fusil <- combined_fusil %>%
+combined_fusil2 <- combined_fusil %>%
   group_by(fusil) %>%
   mutate(drug_class = fct_reorder(drug_class, percentage)) %>%
   filter(!(drug_class %in% drug_classes_to_keep))

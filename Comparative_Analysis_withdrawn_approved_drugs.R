@@ -1,3 +1,7 @@
+library(tidyverse)
+library(biomaRt)
+
+
 # For all the Open Target Data set 
 
 # To see Gene targets Paralogue Presence for gene target between withdrawn and approved
@@ -114,6 +118,11 @@ approved_genes$paralogue_status <- ifelse(
   )
 )
 
+
+approved_genes <- approved_genes %>%
+filter(!(paralogue_status == "not_found"))
+
+
 # Count approved genes per paralogue status
 status_counts <- table(approved_genes$paralogue_status)
 
@@ -226,12 +235,13 @@ withdrawn_genes2 <- withdrawn_genes %>%
   mutate(percentage = (n/sum(n))*100)
 
 
+
 # Visualize withdrawn genes by paralogue status
 ggplot(withdrawn_genes2, aes(x = fusil, y = percentage, fill = paralogue_status)) +
   geom_bar(stat = "identity", position = "dodge") +
   geom_text(aes(label = sprintf("%.1f%%", percentage)), vjust = -0.5) +
   labs(title = "Percentage of Genes by Paralogous Status ( Withdrawn )",
-       x = "Paralogue Status",
+       x = "FUSIL",
        y = "Percentage") +
   theme_minimal()
 
@@ -241,7 +251,7 @@ ggplot(withdrawn_genes2, aes(x = fusil, y = percentage, fill = paralogue_status)
 
 # Select unique withdrawn gene targets
 approved_genes <- opentarget_data_fusil %>%
-  filter(phase == "4" | status == "Completed") %>%
+  filter(status == "Completed", phase == "4") %>%
   dplyr::select(approvedSymbol, fusil) %>%
   unique()
 
@@ -266,6 +276,7 @@ approved_genes$paralogue_status <- ifelse(
 
 
 approved_genes2 <- approved_genes %>%
+  filter(!(paralogue_status == "not_found")) %>%
   count(fusil, paralogue_status) %>%
   group_by(fusil) %>%
   mutate(percentage = (n/sum(n))*100)
@@ -276,22 +287,48 @@ ggplot(approved_genes2, aes(x = fusil, y = percentage, fill = paralogue_status))
   geom_bar(stat = "identity", position = "dodge") +
   geom_text(aes(label = sprintf("%.1f%%", percentage)), vjust = -0.5) +
   labs(title = "Percentage of Genes by Paralogous Status ( Approved )",
-       x = "Paralogue Status",
+       x = "FUSIL ",
        y = "Percentage") +
   theme_minimal()
 
 
 
+#Add a column to each summarised dataset:
+
+withdrawn_genes2$group <- "Withdrawn"
+approved_genes2$group <- "Approved"
 
 
 
+# Combine both datasets
+
+
+combined_genes <- bind_rows(withdrawn_genes2, approved_genes2)
 
 
 
+ggplot(combined_genes, aes(x = fusil, y = percentage, fill = paralogue_status)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = sprintf("%.1f%%", percentage)), 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5, size = 3) +
+  facet_wrap(~ group) +
+  labs(title = "Paralogous Status by FUSIL Classification (Withdrawn vs Approved)",
+       x = "FUSIL",
+       y = "Percentage",
+       fill = "Paralogue Status") +
+  theme_minimal()
 
 
 
-
-
-
-
+ggplot(combined_genes, aes(x = fusil, y = percentage, fill = group)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = sprintf("%.1f%%", percentage)), 
+            position = position_dodge(width = 0.9), 
+            vjust = -0.5, size = 3) +
+  facet_wrap(~ paralogue_status) +
+  labs(title = "Paralogous Status by FUSIL Classification (Withdrawn vs Approved)",
+       x = "FUSIL",
+       y = "Percentage",
+       fill = "Paralogue Status") +
+  theme_minimal()
